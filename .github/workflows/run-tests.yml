@@ -35,7 +35,7 @@ jobs:
       # full authenticated Azure Artifacts index URL, e.g.:
       # https://<PAT>@sita-pse.pkgs.visualstudio.com/<feed-id>/_packaging/python_automation/pypi/simple/
       - name: Install private dependencies
-        run: pip install -r requirements_private.txt --index-url "${{ secrets.PRIVATE_FEED_URL }}"
+        run: pip install framework/sita_playwright_python_utils-1.0.9.tar.gz
 
       - name: Get Playwright version
         id: playwright-version
