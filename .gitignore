@@ -1,7 +1,7 @@
 /.venv
 /allure-results
+/allure-report
 /.idea
-/allure-reports
 *.pyc
 /debug
 .vscode
