@@ -1,0 +1,7 @@
+{
+  "name": "User {{timestamp}}",
+  "email": "user{{timestamp}}@example.com",
+  "role": "dynamic_tester",
+  "active": true,
+  "created_at": "{{timestamp}}"
+}

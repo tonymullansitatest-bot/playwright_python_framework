@@ -1,0 +1,127 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'windows-latest'
+
+parameters:
+  - name: browser_platform
+    displayName: Select browser platform
+    type: string
+    default: "desktop"
+    values:
+      - desktop
+      - mobile
+
+  - name: environment
+    displayName: Select environment
+    type: string
+    default: "prod"
+    values:
+      - dev
+      - prod
+
+  - name: tags
+    displayName: Enter tests tag to run
+    type: string
+    default: "my_bag"
+
+  - name: browser
+    displayName: Select browser
+    type: string
+    default: "chromium"
+    values:
+      - "chrome"
+      - "firefox"
+      - "chromium"
+      - "edge"
+      - "safari"
+
+  - name: octane
+    displayName: 'Run in Octane'
+    type: boolean
+    default: "False"
+    values:
+      - True
+      - False
+
+variables:
+  allure_results_dir: 'allure-results'
+  allure_report_dir: 'allure-report'
+  repo_directory: '$(Build.SourcesDirectory)'
+
+steps:
+  # 1. Set up Python environment and install dependencies
+  - powershell: |
+      Set-Location -Path "$(repo_directory)"
+
+      python -m venv .venv
+      .\.venv\Scripts\Activate.ps1
+      
+      pip install -r requirements.txt
+    displayName: 'Set up env and install requirements'
+
+  # 2. Install requirements from private feed
+  - powershell: |
+      .\.venv\Scripts\Activate.ps1
+      
+      pip install keyring artifacts-keyring
+      pip install -r requirements_private.txt --index-url "https://$(System.AccessToken)@sita-pse.pkgs.visualstudio.com/c2e3f9b6-7c38-48ee-8ec9-8797a525b680/_packaging/python_automation/pypi/simple/"
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    displayName: "Install requirements from private feed"
+
+  # 3. Install Playwright Browsers
+  - powershell: |
+      .\.venv\Scripts\Activate.ps1
+      
+      playwright install
+    displayName: 'Install Playwright Browsers'
+
+  # 4. Run tests
+  - powershell: |
+      .\.venv\Scripts\Activate.ps1
+      
+      behave --no-capture --tags="${{ parameters.tags }}" `
+              -D environment=${{ parameters.environment }} `
+              -D browser=${{ parameters.browser }} `
+              -D browser_platform=${{ parameters.browser_platform }} `
+              -D octane=${{ parameters.octane }}
+    displayName: 'Run tests'
+
+  # 5. Install Allure CLI
+  - script: |
+      npm install -g allure-commandline --force
+    displayName: 'Install Allure CLI'
+    condition: succeededOrFailed()
+
+  # 6. Generate Allure Report
+  - script: |
+      allure generate $(allure_results_dir) -o $(allure_report_dir) --clean
+    displayName: 'Generate Allure Report'
+    condition: succeededOrFailed()
+
+  # 7. Publish Allure Report Artifact
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Allure Report Artifact'
+    condition: succeededOrFailed()
+    inputs:
+      path: '$(allure_report_dir)'
+      artifact: 'AllureReport'
+      publishLocation: 'pipeline'
+
+  # 8. Publish Allure Results Artifact
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Allure Results Artifact'
+    condition: succeededOrFailed()
+    inputs:
+      path: '$(allure_results_dir)'
+      artifact: 'AllureResults'
+      publishLocation: 'pipeline'
+
+  # 9. Publish Allure Report to Azure DevOps
+  - task: qameta.allure-azure-pipelines.PublishAllureReport.PublishAllureReport@1
+    displayName: 'Publish Allure Report to Azure DevOps'
+    condition: succeededOrFailed()
+    inputs:
+      reportDir: '$(allure_report_dir)'

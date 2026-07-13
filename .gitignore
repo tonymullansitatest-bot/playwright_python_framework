@@ -1,0 +1,10 @@
+/.venv
+/allure-results
+/.idea
+/allure-reports
+*.pyc
+/debug
+.vscode
+venv
+screenshots
+.env

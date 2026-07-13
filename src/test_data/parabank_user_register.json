@@ -1,0 +1,13 @@
+{
+  "first_name": "Del",
+  "last_name": "Boy",
+  "address": "anywhere",
+  "city": "Peckham",
+  "state": "London",
+  "zip_code": "del123",
+  "phone": "123-456-7890",
+  "ssn": "123-45-6789",
+  "username": "delboy",
+  "password": "delboy123",
+  "confirm_password": "delboy123"
+}
