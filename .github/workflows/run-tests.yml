@@ -55,8 +55,6 @@ jobs:
           behave src/features/parabank_examples src/features/practice \
             --no-capture \
             --format pretty \
-            --format allure_behave.formatter:AllureFormatter \
-            --outfile allure-results \
             -D environment=prod \
             -D browser=chromium \
             -D browser_platform=desktop
