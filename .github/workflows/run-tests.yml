@@ -57,7 +57,8 @@ jobs:
             --format pretty \
             -D environment=prod \
             -D browser=chromium \
-            -D browser_platform=desktop
+            -D browser_platform=desktop \
+            -D headless=true
 
       - name: Install Allure CLI
         if: always()
